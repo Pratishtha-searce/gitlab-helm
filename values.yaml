@@ -4,7 +4,7 @@ image:
   repository: $hello1
   pullPolicy: IfNotPresent
   secret:
-    name : $name2  
+    name : $secret1  
 
 service:
   type: ClusterIP
