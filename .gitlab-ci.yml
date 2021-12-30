@@ -1,0 +1,40 @@
+image: docker:latest
+
+services:
+  - docker:18.09.7-dind
+stages:
+  - build
+  - deploy
+  
+variables:
+  DOCKER_HOST: tcp://docker:2375
+  GCP_PROJECT_ID: "searce-playground-automation"
+  GCP_ZONE: "us-central1-c"
+  GKE_CLUSTER_NAME: "bt-nginx"
+  REGISTRY_NAME: registry.gitlab.com/searce-boomtown/gcp-deployment:$CI_COMMIT_SHORT_SHA
+  pass1: $DOCKER_PASS
+  user1: $CI_REGISTRY_USER
+  name2: "$name1"
+
+build:
+  stage: build
+  tags: ["demo2"]
+  script:
+    - echo "$DOCKER_PASS" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    # Build and tag image for Gitlab registries
+    - docker build -t $REGISTRY_NAME .
+    # Push image 
+    - docker push $REGISTRY_NAME
+
+deploy:
+  stage: deploy
+  tags: ["demo1"] #shell-executor
+  script:
+    - export hello1=registry.gitlab.com/searce-boomtown/gcp-deployment:$CI_COMMIT_SHORT_SHA 
+    - echo $hello1
+    - kubectl create secret docker-registry $name2 --docker-server=https://registry.gitlab.com --docker-username=$user1 --docker-password=$pass1
+    - envsubst < values1.yaml > values.yaml
+    - gcloud container clusters get-credentials bt-nginx --zone us-central1-c --project searce-playground-automation
+    - kubectl get all
+    - helm install flask-python
+    #- helm upgrade --force flask-python .
