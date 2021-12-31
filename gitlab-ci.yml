@@ -8,9 +8,6 @@ stages:
   
 variables:
   DOCKER_HOST: tcp://docker:2375
-  GCP_PROJECT_ID: "searce-playground-automation"
-  GCP_ZONE: "us-central1-c"
-  GKE_CLUSTER_NAME: "bt-nginx"
   REGISTRY_NAME: registry.gitlab.com/searce-boomtown/gcp-deployment:$CI_COMMIT_SHORT_SHA
   pass1: $DOCKER_PASS
   user1: $CI_REGISTRY_USER
