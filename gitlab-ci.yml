@@ -1,5 +1,4 @@
 image: docker:latest
-
 services:
   - docker:18.09.7-dind
 stages:
@@ -8,10 +7,9 @@ stages:
   
 variables:
   DOCKER_HOST: tcp://docker:2375
-  REGISTRY_NAME: registry.gitlab.com/searce-boomtown/gcp-deployment:$CI_COMMIT_SHORT_SHA
+  REGISTRY_NAME: registry.gitlab.com/xxxx/gcp deployment:$CI_COMMIT_SHORT_SHA
   pass1: $DOCKER_PASS
   user1: $CI_REGISTRY_USER
-  secret1: "$secret"
 
 build:
   stage: build
@@ -22,16 +20,19 @@ build:
     - docker build -t $REGISTRY_NAME .
     # Push image 
     - docker push $REGISTRY_NAME
-
+    
 deploy:
   stage: deploy
   tags: ["demo1"] #shell-executor
-  script:
-    - export hello1=registry.gitlab.com/searce-boomtown/gcp-deployment:$CI_COMMIT_SHORT_SHA 
+  variables:
+    APP_NAME: flask-python
+    SERVICE_ACCOUNT: XXXXX
+script:
+    - export hello1=registry.gitlab.com/xxxx/gcp-deployment:$CI_COMMIT_SHORT_SHA 
     - echo $hello1
-    - kubectl create secret docker-registry $secret1 --docker-server=https://registry.gitlab.com --docker-username=$user1 --docker-password=$pass1
-    - envsubst < values1.yaml > values.yaml
+    - echo $SERVICE_ACCOUNT | base64 -d > key.json
+    - gcloud auth activate-service-account --key-file key.json
     - gcloud container clusters get-credentials gitlabci --zone us-central1-c --project searce-playground-automation
     - kubectl get all
-    - helm install flask-python
-    #- helm upgrade --force flask-python .
+    - helm upgrade ${APP_NAME} --install .
+
